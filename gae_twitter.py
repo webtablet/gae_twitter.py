@@ -43,8 +43,12 @@ from google.appengine.api import urlfetch
 
 TWITTER_POST_PROTOCOL="http"
 TWITTER_SITE = "twitter.com"
-TWITTER_POST_PATH = "/statuses/update.rss"
-TWITTER_VERIFY_PATH = "/account/verify_credentials.rss"
+TWITTER_POST_PATH = "/statuses/update.xml"
+
+# Note: status code of .xml and .rss differ!
+TWITTER_VERIFY_PATH = "/account/verify_credentials.xml"
+
+
 TWITTER_POST_URL = "%s://%s%s" % (TWITTER_POST_PROTOCOL, TWITTER_SITE,
                                   TWITTER_POST_PATH)
 TWITTER_VERIFY_URL = "%s://%s%s" % (TWITTER_POST_PROTOCOL, TWITTER_SITE,
@@ -69,7 +73,8 @@ class GAETwitter(object):
 
     def post(self, message):
         """posts the message
-        returns the status code from the post
+        returns string of the status code from the post
+        if some error occurs, returns the error statement
         """
         form_fields = {
           "status": message,
@@ -86,9 +91,9 @@ class GAETwitter(object):
                                 payload=form_data,
                                 method=urlfetch.POST,
                                 headers=headers)
-            return response.status_code
         except Exception, e:
-            return False
+            return str(e)
+        return str(response.status_code)
 
     def verify(self):
         """Verifies the username and password"""
@@ -102,12 +107,12 @@ class GAETwitter(object):
             response = urlfetch.fetch(url=TWITTER_VERIFY_URL,
                                       method=urlfetch.GET,
                                       headers=headers)
-            if (response.status_code != 200):
-                return response.content
-            if (response.content.find("Could not authenticate") == -1):
-                return True
-        except:
-            return False
-        return False
+        except Exception, e:
+            return str(e)
+        if (response.status_code != 200):
+            return str(response.status_code) + TWITTER_VERIFY_URL
+        else:
+            return True
+        return str(response.content)
 
 # end file

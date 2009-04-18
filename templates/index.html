@@ -5,8 +5,11 @@
 {% block contents %}
 
 <div id="create_bot">
+
 {% if username %}
-ようこそ {{ username }}({{ useremail }})！
+Welcome {{ username }}({{ useremail }})！
+
+
 
 <form action="" method="post">
   <fieldset>
@@ -30,7 +33,8 @@
   </dt>
   <br />
   <div class="submit">
-    <input type="submit" value="Create Bot" id="submit_button">
+    <input type="submit" value="Create Bot" id="submit_button" />
+    <img src="/img/ajax-loader.gif" id="loading_img" style="display:none" />
   </div>
   </fieldset>
 </form>
@@ -51,6 +55,13 @@
 <h2>About this site</h2>
 <p>You can your check updates of yoru favorite feeds through Twitter.</p>
 
+{% if username %}
+<h2>Your bots</h2>
+<p>
+<a href="/show/">See Your bots</a> and configure them.
+</p>
+
+{% endif %}
 
 <!-- end of contents -->
 </div>

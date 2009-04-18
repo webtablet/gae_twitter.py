@@ -21,7 +21,15 @@ RSS Twitter Bot Creator
 <body>
 <div id="wrapper">
 <div id="header">
-<h1>Twitter RSS Bot Creator</h1>
+<a href="/">
+  <h1>Twitter RSS Bot Creator</h1>
+</a>
+
+
+{% if logout_url %}
+<p class="logout_url"><a href="{{ logout_url }}">Sign out</a></p>
+{% endif %}
+
 <p>Create your own bot on twitter</p>
 <!-- end of header -->
 </div>

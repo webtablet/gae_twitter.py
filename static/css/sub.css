@@ -1,5 +1,10 @@
 @charset "utf-8";
 
+.logout_url {
+    float:right;
+    margin-top: -1em;
+}
+
 div#create_bot span.note{
     font-size: 90%;
     margin-left: 4em;
@@ -12,4 +17,7 @@ div#create_bot div.submit{
     margin-top: 0.5em;
 }
 
+div#create_bot img#loading_img{
+    display:none;
+}
 

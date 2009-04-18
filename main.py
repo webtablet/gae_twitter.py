@@ -28,7 +28,7 @@ INVALID_FEED = 2
 
 # I use relative imports...
 from gae_twitter import GAETwitter
-from models import Bot, bots_by_user
+from models import Bot, bots_by_user, bots_to_update
 
 import feedparser
 
@@ -52,6 +52,7 @@ class MainHandler(webapp.RequestHandler):
             template_values = {
                 'username': user.nickname(),
                 'useremail': user.email(),
+                'logout_url': users.create_logout_url("/"),
                 }
         else:
             template_values = {
@@ -76,12 +77,8 @@ class BotCreateHandler(webapp.RequestHandler):
         # Verify the account information
         gae_twitter = GAETwitter(username=name, password=password)
         verify_result = gae_twitter.verify()
-        if not verify_result:
+        if (verify_result != True):
             error_status = error_status + 1
-
-        self.response.out.write(str(verify_result))
-        return
-
 
         # Verify the feed URL
         d = feedparser.parse(feed)
@@ -108,7 +105,8 @@ class BotShowHandler(webapp.RequestHandler):
             return
         bots = bots_by_user(user)
         template_values = {
-            'bots': bots
+            'bots': bots,
+            'logout_url': users.create_logout_url("/"),
             }
         path = template_path("show")
         self.response.out.write(template.render(path, template_values))
@@ -123,8 +121,17 @@ class BotCronHandler(webapp.RequestHandler):
             debug('urlfetch failed')
             self.response.out.write('urlfetch failed?')
         else:
-            debug('urlfetch succeed')
-            self.response.out.write('urlfetch succeed %d' % status_code)
+            pass
+#            self.response.out.write('urlfetch succeed %s' % status_code)
+
+        bots = bots_to_update()
+        feeds = ""
+        for bot in bots:
+            last_update = bot.updated
+            feeds = feeds + bot.feed + "\n"
+#            bot.postfeedentry(last_update)
+        self.response.out.write(feeds)
+
 
 def main():
     application = webapp.WSGIApplication(
