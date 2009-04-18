@@ -1,0 +1,42 @@
+@charset "utf-8";
+@import "default.css";
+@import "sub.css";
+
+/**********
+
+The Main "div" elements: header(top),wrapper(contents,menu,footer),
+or wrapper(header,center,footer).
+
+**********/
+
+div#header{
+	width:100%;
+	border-bottom:1px solid #111111;
+}
+
+
+div#wrapper {
+	margin:0 auto 5px auto;
+	width:760px;
+	background:#ffffff;
+}
+
+div#contents{
+	padding-left:6px;
+	padding-right:6px;
+}
+
+div#create_bot{
+	width:170px;
+	height:400px;
+	padding:4px;
+	border-right: 1px dashed #DDDDDD;
+	float:right;
+}
+
+div#footer{
+	height:42px;
+	border-top:1px solid #DDDDDD;
+	clear:both;
+	text-align:center;
+}

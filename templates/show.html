@@ -1,0 +1,25 @@
+{% extends "_base.html"}
+
+{% block title %}
+Show your bots - 
+{% endblock %}
+
+{% block contents %}
+
+
+<h1>Your bots</h1>
+{% for bot in bots %}
+  <h2>{{ bot.name }}</h2>
+  <p>Interval : {{ bot.interval }} minutes </p>
+  <ul>
+    <li>updated : {{ bot.updated }}</p>
+    <li>created : {{ bot.created }}</p>
+  </ul>
+{% endfor %}
+
+
+
+{% endblock %}
+
+
+
