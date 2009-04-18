@@ -4,23 +4,33 @@
 #
 
 import os
+import sys
 import time
 import logging
+
+from os.path import dirname, join as join_path
+
 
 import wsgiref.handlers
 
 # Why epylint.py doesnot recognize the webapp module?
 # /Applications/GoogleAppEngineLauncher.app/Contents/Resources/GoogleAppEngine-default.bundle/Contents/Resources/google_appengine/google/appengine/ext/webapp
 
-
-
 from google.appengine.ext import webapp
 from google.appengine.api import users
 from google.appengine.ext.webapp import template
 
+APP_DIRECTORY = dirname(__file__)
+sys.path.insert(0, join_path(APP_DIRECTORY, 'third_party'))
+
+INVALID_ACCOUNT = 1
+INVALID_FEED = 2
+
 # I use relative imports...
 from gae_twitter import GAETwitter
 from models import Bot, bots_by_user
+
+import feedparser
 
 from twitter_password import TWITTER_USERNAME, TWITTER_PASSWORD
 
@@ -53,21 +63,40 @@ class MainHandler(webapp.RequestHandler):
 
 class BotCreateHandler(webapp.RequestHandler):
     """A handler that creates a Bot"""
-    def get(self):
+    def post(self):
+        """Creates a bot"""
+        error_status = 0
         user = users.get_current_user()
         if not user:
-            greeting = ("<a href=\"%s\">Sign in or register</a>." %
-                        users.create_login_url("/"))
-            self.response.out.write("<html><body>%s</body></html>" % greeting)
-            return
-        greeting = ("Welcome, %s! (<a href=\"%s\">sign out</a>)" %
-                    (user.nickname(), users.create_logout_url("/")))
-        bot = Bot(name="testbot2",
-                  user=user,
-                  interval=3)
-        bot.put()
-        debug('put a bot into database?')
-        self.response.out.write('bot created')
+            self.response.out.write("not registered in google")
+        name = self.request.get('name')
+        password = self.request.get('password')
+        feed = self.request.get('feed')
+
+        # Verify the account information
+        gae_twitter = GAETwitter(username=name, password=password)
+        verify_result = gae_twitter.verify()
+        if not verify_result:
+            error_status = error_status + 1
+
+        self.response.out.write(str(verify_result))
+        return
+
+
+        # Verify the feed URL
+        d = feedparser.parse(feed)
+
+        if (d.bozo > 0):
+            error_status = error_status + 2
+
+        if (error_status == 0):
+            bot = Bot(name=name, password=password, feed=feed)
+            bot.put()
+        self.response.out.write(str(error_status))
+
+
+    def get(self):
+        self.response.out.write("post me!")
 
 class BotShowHandler(webapp.RequestHandler):
     def get(self):

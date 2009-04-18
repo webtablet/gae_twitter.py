@@ -1,9 +1,15 @@
 @charset "utf-8";
 
-div#create_bot table {
-    
-
+div#create_bot span.note{
+    font-size: 90%;
+    margin-left: 4em;
+    color: #888;
 }
 
-div#create_bot table td {
+
+div#create_bot div.submit{
+    text-align:center;
+    margin-top: 0.5em;
 }
+
+

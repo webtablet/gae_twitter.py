@@ -32,9 +32,9 @@ __version__ = "0.0.1"
 # standard library
 import urllib
 import base64
+import logging
 
 # third party
-from google.appengine.ext import webapp
 from google.appengine.api import urlfetch
 
 
@@ -44,8 +44,16 @@ from google.appengine.api import urlfetch
 TWITTER_POST_PROTOCOL="http"
 TWITTER_SITE = "twitter.com"
 TWITTER_POST_PATH = "/statuses/update.rss"
+TWITTER_VERIFY_PATH = "/account/verify_credentials.rss"
 TWITTER_POST_URL = "%s://%s%s" % (TWITTER_POST_PROTOCOL, TWITTER_SITE,
                                   TWITTER_POST_PATH)
+TWITTER_VERIFY_URL = "%s://%s%s" % (TWITTER_POST_PROTOCOL, TWITTER_SITE,
+                                    TWITTER_VERIFY_PATH)
+
+def debug(message):
+    """Debug function using logging module"""
+    logging.getLogger().debug(message)
+
 # => http://twitter.com/statuses/update.rss
 
 class GAETwitter(object):
@@ -57,6 +65,7 @@ class GAETwitter(object):
         """
         self.username = username  # username used for login
         self.password = password  # password used for login
+
 
     def post(self, message):
         """posts the message
@@ -80,5 +89,25 @@ class GAETwitter(object):
             return response.status_code
         except Exception, e:
             return False
+
+    def verify(self):
+        """Verifies the username and password"""
+        base64string = base64.encodestring("%s:%s" % (
+                self.username, self.password))[:-1]
+        headers = {
+            "Authorization": ("Basic %s" % base64string),
+            'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        try:
+            response = urlfetch.fetch(url=TWITTER_VERIFY_URL,
+                                      method=urlfetch.GET,
+                                      headers=headers)
+            if (response.status_code != 200):
+                return response.content
+            if (response.content.find("Could not authenticate") == -1):
+                return True
+        except:
+            return False
+        return False
 
 # end file

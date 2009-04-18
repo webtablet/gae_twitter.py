@@ -1,6 +1,5 @@
 {% extends "_base.html"}
 {% block title %}
-hoge
 {% endblock %}
 
 {% block contents %}
@@ -8,27 +7,32 @@ hoge
 <div id="create_bot">
 {% if username %}
 ようこそ {{ username }}({{ useremail }})！
-<form action="/sign" method="post">
-  <table>
-    <tr>
-      <th>
-        Username of the bot<br />
-        <p>http://twitter.com/<span style="color:red">username</span></p>
-      </th>
-      <td>
-        <input type="text" size="20" name="name" />
-      </td>
-    </tr>
-    <tr>
-      <th>
-        password<br />
-      </th>
-      <td>
-        <input type="password" size="20" name="password" />
-      </td>
-    </tr>
-  </table>
-  <input type="submit" value="Create Bot">
+
+<form action="" method="post">
+  <fieldset>
+  <div class="error" id="bot_error_message">
+    <ul>
+
+    </ul>
+  </div>
+
+  <dt>
+    <dt><label for="bot_name">Username of the bot</label></dt>
+    <dd><input type="text" id="bot_name" size="20" name="name" /><br />
+      <span class="note">
+        http://twitter.com/<span style="color:red">username</span>
+      </span>
+    </dd>
+    <dt><label for="bot_password">password</label></dt>
+    <dd><input type="password" id="bot_password" size="20" name="password" /></dd>
+    <dt><label for="bot_feed">Feed URL</label></dt>
+    <dd><input type="text" id="bot_feed" size="20" name="feed" /></dd>
+  </dt>
+  <br />
+  <div class="submit">
+    <input type="submit" value="Create Bot" id="submit_button">
+  </div>
+  </fieldset>
 </form>
 
 {% else %}
