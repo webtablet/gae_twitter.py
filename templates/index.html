@@ -1,0 +1,15 @@
+<html>
+<head>
+</head>
+<body>
+
+{% if username %}
+ようこそ {{ username }}({{ useremail }})！
+
+{% else %}
+<a href="{{ login_url }}"ログインしてください</a>
+{% endif %}
+
+</body>
+
+
