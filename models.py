@@ -17,3 +17,8 @@ class Bot(db.Model):
     created = db.DateTimeProperty(verbose_name="The time this bot is created",
                                   auto_now_add=True)
 
+
+def bots_by_user(user):
+    return db.GqlQuery("SELECT * FROM Bot WHERE user = :1",
+                       user)
+

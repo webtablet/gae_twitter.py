@@ -31,8 +31,8 @@ from google.appengine.api import users
 from google.appengine.ext.webapp import template
 
 # I use relative imports...
-from posttwitter import GAETwitter
-from models import Bot
+from gae_twitter import GAETwitter
+from models import Bot, bots_by_user
 
 from twitter_password import TWITTER_USERNAME, TWITTER_PASSWORD
 
@@ -79,6 +79,21 @@ class BotCreateHandler(webapp.RequestHandler):
         debug('put a bot into database?')
         self.response.out.write('bot created')
 
+class BotShowHandler(webapp.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if not user:
+            greeting = ("<a href=\"%s\">Sign in or register</a>." %
+                        users.create_login_url("/"))
+            self.response.out.write("<html><body>%s</body></html>" % greeting)
+            return
+        bots = bots_by_user(user)
+        template_values = {
+            'bots': bots
+            }
+        path = template_path("show")
+        self.response.out.write(template.render(path, template_values))
+
 class BotCronHandler(webapp.RequestHandler):
     """Cron job handler of bots"""
     def get(self):
@@ -96,6 +111,7 @@ def main():
     application = webapp.WSGIApplication(
         [('/', MainHandler),
          ('/create/', BotCreateHandler),
+         ('/show/', BotShowHandler),
          ('/cron/', BotCronHandler)],
         debug=True)
     wsgiref.handlers.CGIHandler().run(application)
