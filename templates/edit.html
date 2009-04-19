@@ -1,59 +1,75 @@
 {% extends "_base.html"}
-
 {% block title %}
-Edit a bot
+Your bots - 
 {% endblock %}
 
 {% block contents %}
 
-Hello, World
+
+<h1>Your bots</h1>
+<h2>{{ bot.name }}</h2>
+  <p>Status : {{ bot.status }}</p>
+
+<div id="update_bot">
+<form action="" method="post">
+  <input type="hidden" name="key" id="bot_key" value="{{ bot.key }}" />
+  <fieldset>
+  <div class="error" id="bot_error_message">
+    <ul>
+
+    </ul>
+  </div>
+
+  <dt>
+    <dt><label for="bot_name">Username of the bot</label></dt>
+    <dd><input type="text" id="bot_name" size="20" name="name"
+               value="{{ bot.name }}" /><br />
+      <span class="note">
+        http://twitter.com/<span style="color:red">username</span>
+      </span>
+    </dd>
+    <dt><label for="bot_password">password</label></dt>
+    <dd><input type="password" id="bot_password" size="20" name="password"
+               value="{{ bot.password }}" /></dd>
+    <dt><label for="bot_feed">Feed URL</label></dt>
+    <dd><input type="text" id="bot_feed" size="20" name="feed"
+               value="{{ bot.feed }}" /></dd>
+
+    <dt><label for="bot_message">Message</label></dt>
+    <dd><input type="text" id="bot_message" size="20" name="message"
+               value="{{ bot.message }}" /></dd>
+
+    <dt><label for="bot_interval">Interval (minutes)</label></dt>
+    <dd><input type="text" id="bot_interval" size="3" name="interval"
+               {% if bot.interval %} value="{{ bot.interval }}"{% endif %} /></dd>
+
+    <dt><label for="bot_desc">Description</label></dt>
+    <dd><textarea type="text" name="bot_desc" id="bot_desc" rows="3" cols="20" >{% if bot.desc %}{{ bot.desc }}{% endif %}</textarea>
+    </dd>
+
+    <dt><label for="bot_enable">Enable or not</label></dt>
+    <dd><input type="checkbox" id="bot_enable" name="enable"
+               value="1" 
+               {% if bot.enable %}checked="checked"{% endif %} />
+</dd>
 
 
-<div id="create_bot">
-{% if username %}
-ようこそ {{ username }}({{ useremail }})！
-<form action="/sign" method="post">
-  <table>
-    <th>
-      Username of the bot<br />
-      <p>http://twitter.com/<span style="color:red">username</span></p>
-    </th>
-    <td>
-      <input type="text" size="20" name="name" />
-    </td>
-    <th>
-      password<br />
-    </th>
-    <td>
-      <input type="password" size="20" name="password" />
-    </td>
-
-    <th>
-      Interval
-    </th>
-    <td>
-      <input type="text" size="1" name="interval" /> minutes
-    </td>
-
-    <th>
-      Description
-    </th>
-    <td>
-      <textarea name="content" rows="3" cols="60"></textarea>
-    </td>
-  </table>
-  <input type="submit" value="Sign Guestbook">
+  </dt>
+  <br />
+  <div class="submit">
+    <input type="submit" value="Update Bot" id="edit_button" />
+    <img src="/img/ajax-loader.gif" id="loading_img" style="display:none" />
+  </div>
+  </fieldset>
 </form>
 
-{% else %}
+  <ul>
+    <li>updated : {{ bot.updated }}</p>
+    <li>created : {{ bot.created }}</p>
+  </ul>
 
-<p class="login_link">
-<a href="{{ login_url }}">Please login Google</a>
-</p>
-
-{% endif %}
 </div>
-
-
 {% endblock %}
+
+
 

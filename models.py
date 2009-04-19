@@ -18,7 +18,7 @@ class Bot(db.Model):
     interval = db.IntegerProperty(verbose_name="Interval minutes the bot works with",
                                   default=15)
     user = db.UserProperty(verbose_name="Google Account who created the bot",
-                           auto_current_user=True, auto_current_user_add=True)
+                           required=True, auto_current_user_add=True)
     link = db.LinkProperty(verbose_name="Link to the bot website")
     feed = db.LinkProperty(verbose_name="Feed URL", required=True)
     desc = db.TextProperty(verbose_name="Description of the bot")
@@ -34,16 +34,28 @@ class Bot(db.Model):
     created = db.DateTimeProperty(verbose_name="The time this bot is created",
                                   auto_now_add=True)
 
+    def update_myself(self, request):
+        self.name = request.get('name')
+        self.password = request.get('password')
+        self.message = request.get('message')
+        self.interval= int(request.get('interval'))
+        self.feed = request.get('feed')
+        if request.get('link'):
+            self.link = request.get('link')
+        self.enable = bool(int(request.get('enable')))
+        self.desc = request.get('desc')
+        self.put()
+
     def create_post_message(self, entry):
-        message = self.message
+        message = self.message.encode('utf-8')
         message = message.replace('{{title}}',
-                                  entry.get('title', "No title").encode('utf-8'))
+                                      entry.get('title', "No title").encode('utf-8'))
         message = message.replace('{{url}}',
                                   entry.get('link', "No link").encode('utf-8'))
-
         if 'href' in entry and entry.href.find('http://twitter.com/') == 0:
             author = entry.href[len('http://twitter.com/'):]
-            message = message.replace('{{author}}', author)
+            message = message.replace('{{author}}', author.encode('utf-8'))
+        logging.debug(message)
         return message
 
     def postfeedentry(self):
@@ -77,6 +89,7 @@ class Bot(db.Model):
                 logging.debug("passed %s" % str(entry_datetime))
                 continue
             message = self.create_post_message(entry)
+            logging.debug(message)
             status = gae_twitter.post(message)
             self.last_post = entry_datetime
             self.status = status
@@ -85,14 +98,18 @@ class Bot(db.Model):
             post_count = post_count + 1
             if post_count > 2:
                 break
+        self.last_post = datetime.now()
+        self.put()
         return post_count
 
 
 def bots_by_user(user):
+    """Returns bots the current user has"""
     return db.GqlQuery("SELECT * FROM Bot WHERE user = :1",
                        user)
 
 
 def bots_to_update():
-    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 LIMIT 1",
+    """Returns several bots whose last_post are oldest ones"""
+    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 ORDER BY last_post ASC LIMIT 1",
                        True)

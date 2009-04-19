@@ -1,5 +1,5 @@
 cron:
 - description: GAE twitter test
   url: /cron/
-  schedule: every 37 minutes
+  schedule: every 1 minutes
 

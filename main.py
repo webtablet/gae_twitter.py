@@ -17,8 +17,10 @@ import wsgiref.handlers
 # /Applications/GoogleAppEngineLauncher.app/Contents/Resources/GoogleAppEngine-default.bundle/Contents/Resources/google_appengine/google/appengine/ext/webapp
 
 from google.appengine.ext import webapp
+from google.appengine.ext import db
 from google.appengine.api import users
 from google.appengine.ext.webapp import template
+
 
 APP_DIRECTORY = dirname(__file__)
 sys.path.insert(0, join_path(APP_DIRECTORY, 'third_party'))
@@ -88,12 +90,36 @@ class BotCreateHandler(webapp.RequestHandler):
 
         if (error_status == 0):
             bot = Bot(name=name, password=password, feed=feed)
+            bot.user = user
             bot.put()
         self.response.out.write(str(error_status))
 
 
     def get(self):
         self.response.out.write("post me!")
+
+class BotEditHandler(webapp.RequestHandler):
+    def post(self):
+        """Edits a bot"""
+        key = self.request.get('key')
+        bot = db.get(db.Key(key))
+        try:
+            bot.update_myself(self.request)
+        except Exception, e:
+            self.response.out.write(str(e))
+            return
+        self.response.out.write("0")
+
+    def get(self):
+        key = self.request.get('key')
+        bot = Bot.get(key)
+        template_values = {
+            'bot': bot,
+            'logout_url': users.create_logout_url("/"),
+            }
+        path = template_path("edit")
+        self.response.out.write(template.render(path, template_values))
+
 
 class BotShowHandler(webapp.RequestHandler):
     def get(self):
@@ -128,6 +154,7 @@ class BotCronHandler(webapp.RequestHandler):
         bots = bots_to_update()
         feeds = ""
         for bot in bots:
+            logging.debug(bot.name)
             feeds = feeds + bot.feed + "\n"
             post_count = bot.postfeedentry()
         self.response.out.write(feeds + str(post_count))
@@ -138,6 +165,7 @@ def main():
         [('/', MainHandler),
          ('/create/', BotCreateHandler),
          ('/show/', BotShowHandler),
+         ('/edit/', BotEditHandler),
          ('/cron/', BotCronHandler)],
         debug=True)
     wsgiref.handlers.CGIHandler().run(application)
