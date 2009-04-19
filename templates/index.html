@@ -53,15 +53,38 @@ Welcome {{ username }}({{ useremail }})！
 <div id="contents">
 
 <h2>About this site</h2>
-<p>You can your check updates of yoru favorite feeds through Twitter.</p>
+<p>Follow updates of your favorite feeds through Twitter.</p>
 
 {% if username %}
 <h2>Your bots</h2>
 <p>
 <a href="/show/">See Your bots</a> and configure them.
 </p>
-
 {% endif %}
+
+
+<h2 style="width: 600px; clear:both">Bots to be updated</h2>
+<table class="bots">
+<tr>
+  <th>Name</th>
+  <th>Feed URL</th>
+  <th>Last Check</th>
+</tr>
+{% for bot in bots %}
+<tr>
+  <td>
+    <a href="http://twitter.com/{{ bot.name }}">{{ bot.name }}</a>
+  </td>
+  <td>
+    <a href="{{ bot.feed }}">{{ bot.feed|urlizetrunc:45 }}</a>
+  </td>
+  <td>
+    {{ bot.last_post|date:"Y n/j G:i:s T" }}
+  </td>
+</tr>
+{% endfor %}
+</table>
+
 
 <!-- end of contents -->
 </div>

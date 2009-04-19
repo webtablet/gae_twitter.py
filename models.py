@@ -115,5 +115,5 @@ def bots_by_user(user):
 
 def bots_to_update():
     """Returns several bots whose last_post are oldest ones"""
-    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 ORDER BY last_post ASC LIMIT 1",
+    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 ORDER BY last_post ASC LIMIT 3",
                        True)

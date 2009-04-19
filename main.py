@@ -49,16 +49,19 @@ class MainHandler(webapp.RequestHandler):
     """Top page"""
     def get(self):
         user = users.get_current_user()
+        bots = bots_to_update()
         template_values = {}
         if user:
             template_values = {
                 'username': user.nickname(),
                 'useremail': user.email(),
                 'logout_url': users.create_logout_url("/"),
+                'bots' : bots,
                 }
         else:
             template_values = {
                 'login_url': users.create_login_url("/"),
+                'bots' : bots,
                 }
         path = template_path("index")
         self.response.out.write(template.render(path, template_values))
@@ -140,18 +143,7 @@ class BotShowHandler(webapp.RequestHandler):
 class BotCronHandler(webapp.RequestHandler):
     """Cron job handler of bots"""
     def get(self):
-#        gae_twitter = GAETwitter(TWITTER_USERNAME, TWITTER_PASSWORD)
-#        current_time = time.strftime(u'%Y年%m月%d日 %H時%M分%S秒'.encode('utf-8'))
-#        status_code = gae_twitter.post("Hello, GAETwitter %s" % current_time)
-#        if (status_code == Falsep):
-#            debug('urlfetch failed')
-#            self.response.out.write('urlfetch failed?')
-#        else:
-#            pass
-
-#            self.response.out.write('urlfetch succeed %s' % status_code)
-
-        bots = bots_to_update()
+        bots = bots_to_update()[:1]
         feeds = ""
         for bot in bots:
             logging.debug(bot.name)

@@ -21,3 +21,11 @@ div#create_bot img#loading_img{
     display:none;
 }
 
+.bots {
+    margin-bottom: 2em;
+    border-collapse:collapse;
+}
+
+.bots td, .bots th{
+    border: 1px solid #888
+}
