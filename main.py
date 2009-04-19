@@ -114,23 +114,23 @@ class BotShowHandler(webapp.RequestHandler):
 class BotCronHandler(webapp.RequestHandler):
     """Cron job handler of bots"""
     def get(self):
-        gae_twitter = GAETwitter(TWITTER_USERNAME, TWITTER_PASSWORD)
-        current_time = time.strftime(u'%Y年%m月%d日 %H時%M分%S秒'.encode('utf-8'))
-        status_code = gae_twitter.post("Hello, GAETwitter %s" % current_time)
-        if (status_code == False):
-            debug('urlfetch failed')
-            self.response.out.write('urlfetch failed?')
-        else:
-            pass
+#        gae_twitter = GAETwitter(TWITTER_USERNAME, TWITTER_PASSWORD)
+#        current_time = time.strftime(u'%Y年%m月%d日 %H時%M分%S秒'.encode('utf-8'))
+#        status_code = gae_twitter.post("Hello, GAETwitter %s" % current_time)
+#        if (status_code == Falsep):
+#            debug('urlfetch failed')
+#            self.response.out.write('urlfetch failed?')
+#        else:
+#            pass
+
 #            self.response.out.write('urlfetch succeed %s' % status_code)
 
         bots = bots_to_update()
         feeds = ""
         for bot in bots:
-            last_update = bot.updated
             feeds = feeds + bot.feed + "\n"
-#            bot.postfeedentry(last_update)
-        self.response.out.write(feeds)
+            post_count = bot.postfeedentry()
+        self.response.out.write(feeds + str(post_count))
 
 
 def main():

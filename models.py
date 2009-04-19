@@ -1,7 +1,11 @@
 #import datetime
 # -*- coding: utf-8 -*-
 from google.appengine.ext import db
+from datetime import datetime
 import feedparser
+
+import logging
+
 from gae_twitter import GAETwitter
 
 class Bot(db.Model):
@@ -22,6 +26,9 @@ class Bot(db.Model):
                               default="{{title}} : {{url}}")
     status = db.TextProperty(verbose_name="Error messages")
 
+    last_post = db.DateTimeProperty(verbose_name="The time this bot is updated",
+                                    auto_now_add=True)
+
     updated = db.DateTimeProperty(verbose_name="The time this bot is updated",
                                   auto_now=True)
     created = db.DateTimeProperty(verbose_name="The time this bot is created",
@@ -31,33 +38,54 @@ class Bot(db.Model):
         message = self.message
         message = message.replace('{{title}}',
                                   entry.get('title', "No title").encode('utf-8'))
-        message = message.replace('{{link}}',
+        message = message.replace('{{url}}',
                                   entry.get('link', "No link").encode('utf-8'))
-        message = message.replace('{{author}}',
-                                  entry.get('author', "No author").encode('utf-8'))
+
+        if 'href' in entry and entry.href.find('http://twitter.com/') == 0:
+            author = entry.href[len('http://twitter.com/'):]
+            message = message.replace('{{author}}', author)
         return message
 
-    def postfeedentry(self, last_update):
+    def postfeedentry(self):
         gae_twitter = GAETwitter(username=self.name, password=self.password)
         feed_result = feedparser.parse(self.feed)
         if 'bozo_exception' in feed_result:
             self.status = str(feed_result.bozo_exception)
+            logging.debug("bozo_exception")
             self.put()
-            return False
+            return 0
         self.put()
+
         if not ("entries" in feed_result):
-            return False
+            logging.debug("no entries? %s" % self.feed)
+            self.status = "%s has no entries" % self.feed
+            return 0
+        post_count = 0
+        last_post = self.last_post
+        if not last_post:
+            return 0
         for entry in feed_result.entries:
-            entry_time = entry.get("updated", None)
+            entry_time = self.last_post
 #            entry_time = localtime(mktime(email.Utils.parsedate(entry_date)) + 32400)
 #            entry_time = strftime('%Y/%m/%d %H:%M',entry_date)
             if not entry_time:
                 continue
 #            if entry_time < last_update:
 #                continue
+            entry_datetime = datetime(*(entry.updated_parsed[:6]))
+            if entry_datetime < last_post:
+                logging.debug("passed %s" % str(entry_datetime))
+                continue
             message = self.create_post_message(entry)
             status = gae_twitter.post(message)
+            self.last_post = entry_datetime
             self.status = status
+            if post_count == 0:
+                self.put()
+            post_count = post_count + 1
+            if post_count > 2:
+                break
+        return post_count
 
 
 def bots_by_user(user):
