@@ -52,11 +52,14 @@ class Bot(db.Model):
                                       entry.get('title', "No title").encode('utf-8'))
         message = message.replace('{{url}}',
                                   entry.get('link', "No link").encode('utf-8'))
+
         if 'href' in entry and entry.href.find('http://twitter.com/') == 0:
             author = entry.href[len('http://twitter.com/'):]
             if author == self.name:
                 return None
             message = message.replace('{{author}}', author.encode('utf-8'))
+        elif 'author' in entry:
+            message = message.replace('{{author}}', entry.author.encode('utf-8'))
         logging.debug(message)
         return message
 

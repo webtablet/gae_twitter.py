@@ -7,6 +7,9 @@ import os
 import sys
 import time
 import logging
+import datetime
+from timeit import Timer
+
 
 from os.path import dirname, join as join_path
 
@@ -90,12 +93,16 @@ class BotCreateHandler(webapp.RequestHandler):
 
         if (d.bozo > 0):
             error_status = error_status + 2
-
+        server_error = ""
         if (error_status == 0):
             bot = Bot(name=name, password=password, feed=feed)
             bot.user = user
-            bot.put()
-        self.response.out.write(str(error_status))
+            try:
+                bot.put()
+            except Exception, e:
+                error_status = error_status + 4
+                server_error = str(e)
+        self.response.out.write(str(error_status) + server_error)
 
 
     def get(self):
@@ -151,12 +158,21 @@ class BotCronHandler(webapp.RequestHandler):
             post_count = bot.postfeedentry()
         self.response.out.write(feeds + str(post_count))
 
+class HatenaTestHandler(webapp.RequestHandler):
+    """Test hatena antenna RSS reply time"""
+    def get(self):
+        before = datetime.datetime.now()
+        feedparser.parse('http://www.hatena.ne.jp/suztomo/antenna.rss')
+        after = datetime.datetime.now()
+        self.response.out.write(after - before)
+
 
 def main():
     application = webapp.WSGIApplication(
         [('/', MainHandler),
          ('/create/', BotCreateHandler),
          ('/show/', BotShowHandler),
+         ('/test_hatena/', HatenaTestHandler),
          ('/edit/', BotEditHandler),
          ('/cron/', BotCronHandler)],
         debug=True)

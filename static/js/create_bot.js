@@ -2,6 +2,7 @@ $(function() {
     // Error Code
     var invalid_account = 1;
     var invalid_feed = 2;
+    var server_error = 4;
 
     function clear_error() {
         var error_message_field = $("#bot_error_message ul")[0];
@@ -60,6 +61,10 @@ $(function() {
                 }
                 if (status & invalid_feed) {
                     errors.push('Could not fetch the feed');
+                }
+
+                if (status & server_error) {
+                    errors.push(message.substr(1));
                 }
 
                 if (status == 0) {
