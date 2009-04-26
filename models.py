@@ -24,6 +24,9 @@ class Bot(db.Model):
     desc = db.TextProperty(verbose_name="Description of the bot")
     message = db.TextProperty(verbose_name="message post to twitter",
                               default="{{title}} : {{url}}")
+    exkeywords = db.TextProperty(verbose_name="keywords not to tweet",
+                                    default="")
+
     status = db.TextProperty(verbose_name="Error messages")
 
     last_post = db.DateTimeProperty(verbose_name="The time this bot is updated",
@@ -35,9 +38,11 @@ class Bot(db.Model):
                                   auto_now_add=True)
 
     def update_myself(self, request):
+        """Updates myself using http request dictionary"""
         self.name = request.get('name')
         self.password = request.get('password')
         self.message = request.get('message')
+        self.exkeywords = request.get('exkeywords')
         self.interval= int(request.get('interval'))
         self.feed = request.get('feed')
         if request.get('link'):
@@ -47,14 +52,21 @@ class Bot(db.Model):
         self.put()
 
     def create_post_message(self, entry):
+        """Creates a string used in tweet"""
         message = self.message.encode('utf-8')
         message = message.replace('{{title}}',
                                       entry.get('title', "No title").encode('utf-8'))
         message = message.replace('{{url}}',
                                   entry.get('link', "No link").encode('utf-8'))
 
+        # Do not post if the message has exclusive keywords
+        for exkeyword in self.exkeywords.split(' '):
+            if message.find(exkeyword.encode('utf-8')) >= 0:
+                return None
+
         if 'href' in entry and entry.href.find('http://twitter.com/') == 0:
             author = entry.href[len('http://twitter.com/'):]
+            # Do not post if the author is the bot itself
             if author == self.name:
                 return None
             message = message.replace('{{author}}', author.encode('utf-8'))
@@ -64,6 +76,7 @@ class Bot(db.Model):
         return message
 
     def postfeedentry(self):
+        """Posts a tweet"""
         gae_twitter = GAETwitter(username=self.name, password=self.password)
         feed_result = feedparser.parse(self.feed)
         if 'bozo_exception' in feed_result:
@@ -83,12 +96,8 @@ class Bot(db.Model):
             return 0
         for entry in feed_result.entries:
             entry_time = self.last_post
-#            entry_time = localtime(mktime(email.Utils.parsedate(entry_date)) + 32400)
-#            entry_time = strftime('%Y/%m/%d %H:%M',entry_date)
             if not entry_time:
                 continue
-#            if entry_time < last_update:
-#                continue
             entry_datetime = datetime(*(entry.updated_parsed[:6]))
             if entry_datetime < last_post:
                 logging.debug("passed %s" % str(entry_datetime))

@@ -8,8 +8,6 @@ import sys
 import time
 import logging
 import datetime
-from timeit import Timer
-
 
 from os.path import dirname, join as join_path
 
@@ -36,8 +34,6 @@ from gae_twitter import GAETwitter
 from models import Bot, bots_by_user, bots_to_update
 
 import feedparser
-
-from twitter_password import TWITTER_USERNAME, TWITTER_PASSWORD
 
 def debug(message):
     """Debug function using logging module"""

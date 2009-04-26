@@ -29,3 +29,11 @@ div#create_bot img#loading_img{
 .bots td, .bots th{
     border: 1px solid #888
 }
+
+.disabled {
+    color: #AAA;
+}
+
+dt {
+    margin-top: 1em;
+}

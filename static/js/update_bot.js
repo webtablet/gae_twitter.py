@@ -30,6 +30,7 @@ $(function() {
         var password = $("#bot_password").val();
         var feed = $("#bot_feed").val();
         var message = $("#bot_message").val();
+        var exkeywords = $("#bot_exkeywords").val();
         var interval = $("#bot_interval").val();
         var desc = $("#bot_desc").val();
         var enable = $("#bot_enable")[0].checked ? 1 : 0;
@@ -39,6 +40,7 @@ $(function() {
         dataString += "&password=" + password;
         dataString += "&feed=" + feed;
         dataString += "&message=" + message;
+        dataString += "&exkeywords=" + exkeywords;
         dataString += "&interval=" + interval;
         dataString += "&desc=" + desc;
         dataString += "&enable=" + enable;

@@ -16,11 +16,10 @@ Your bots -
   <fieldset>
   <div class="error" id="bot_error_message">
     <ul>
-
     </ul>
   </div>
 
-  <dt>
+  <dl>
     <dt><label for="bot_name">Username of the bot</label></dt>
     <dd><input type="text" id="bot_name" size="20" name="name"
                value="{{ bot.name }}" /><br />
@@ -39,7 +38,11 @@ Your bots -
     <dd><input type="text" id="bot_message" size="20" name="message"
                value="{{ bot.message }}" /></dd>
 
-    <dt><label for="bot_interval">Interval (minutes) <span class="error">not implemented</span></label></dt>
+    <dt><label for="bot_exkeywords">Exclusive keywords</label></dt>
+    <dd><input type="text" id="bot_exkeywords" size="20" name="exkeywords"
+               value="{{ bot.exkeywords }}" /></dd>
+
+    <dt><label for="bot_interval">Interval (minutes) <span class="note">not implemented</span></label></dt>
     <dd><input type="text" id="bot_interval" size="3" name="interval"
                {% if bot.interval %} value="{{ bot.interval }}"{% endif %} /></dd>
 
@@ -54,7 +57,7 @@ Your bots -
 </dd>
 
 
-  </dt>
+  </dl>
   <br />
   <div class="submit">
     <input type="submit" value="Update Bot" id="edit_button" />
