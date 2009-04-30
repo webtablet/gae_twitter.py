@@ -1,4 +1,4 @@
-#import datetime
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from google.appengine.ext import db
 from datetime import datetime
@@ -61,7 +61,10 @@ class Bot(db.Model):
 
         # Do not post if the message has exclusive keywords
         for exkeyword in self.exkeywords.split(' '):
+            if len(exkeyword) < 1:
+                continue
             if message.find(exkeyword.encode('utf-8')) >= 0:
+                logging.debug("passed :"+ message)
                 return None
 
         if 'href' in entry and entry.href.find('http://twitter.com/') == 0:
@@ -114,6 +117,8 @@ class Bot(db.Model):
             post_count = post_count + 1
             if post_count > 2:
                 break
+        if post_count == 0:
+            self.status = "No new entries"
         self.last_post = datetime.now()
         self.put()
         return post_count

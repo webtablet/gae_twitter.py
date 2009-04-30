@@ -39,7 +39,7 @@ $(function() {
         dataString += "&name=" + name;
         dataString += "&password=" + password;
         dataString += "&feed=" + feed;
-        dataString += "&message=" + message;
+        dataString += "&message=" + encodeURIComponent(message);
         dataString += "&exkeywords=" + exkeywords;
         dataString += "&interval=" + interval;
         dataString += "&desc=" + desc;

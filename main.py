@@ -11,7 +11,6 @@ import datetime
 
 from os.path import dirname, join as join_path
 
-
 import wsgiref.handlers
 
 # Why epylint.py doesnot recognize the webapp module?
