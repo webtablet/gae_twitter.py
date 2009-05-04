@@ -44,7 +44,7 @@ $(function() {
 
         dataString = "name=" + name;
         dataString += "&password=" + password;
-        dataString += "&feed=" + feed;
+        dataString += "&feed=" + encodeURIComponent(feed);
         $.ajax({
             type: "POST",
             url: "/create/",

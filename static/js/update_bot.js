@@ -38,11 +38,11 @@ $(function() {
         dataString = "key=" + key;
         dataString += "&name=" + name;
         dataString += "&password=" + password;
-        dataString += "&feed=" + feed;
+        dataString += "&feed=" + encodeURIComponent(feed);
         dataString += "&message=" + encodeURIComponent(message);
-        dataString += "&exkeywords=" + exkeywords;
+        dataString += "&exkeywords=" + encodeURIComponent(exkeywords);
         dataString += "&interval=" + interval;
-        dataString += "&desc=" + desc;
+        dataString += "&desc=" + encodeURIComponent(desc);
         dataString += "&enable=" + enable;
 
         if (feed.length < 5) {
