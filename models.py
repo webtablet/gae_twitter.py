@@ -95,22 +95,24 @@ class Bot(db.Model):
             return 0
         post_count = 0
         last_post = self.last_post
+        newest_entry_datetime = last_post
         if not last_post:
             return 0
         for entry in feed_result.entries:
-            entry_time = self.last_post
-            if not entry_time:
-                continue
+            # Check the entry's time
             entry_datetime = datetime(*(entry.updated_parsed[:6]))
-            if entry_datetime < last_post:
+            if entry_datetime <= last_post:
                 logging.debug("passed %s" % str(entry_datetime))
                 continue
+            if entry_datetime > newest_entry_datetime:
+                newest_entry_datetime = entry_datetime
             message = self.create_post_message(entry)
             if not message:
                 continue
+
+            # post to twitter
             logging.debug(message)
             status = gae_twitter.post(message)
-            self.last_post = entry_datetime
             self.status = status
             if post_count == 0:
                 self.put()
@@ -119,7 +121,9 @@ class Bot(db.Model):
                 break
         if post_count == 0:
             self.status = "No new entries"
-        self.last_post = datetime.now()
+        else:
+            self.status = "Fine"
+        self.last_post = newest_entry_datetime
         self.put()
         return post_count
 
@@ -130,7 +134,8 @@ def bots_by_user(user):
                        user)
 
 
+
 def bots_to_update():
     """Returns several bots whose last_post are oldest ones"""
-    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 ORDER BY last_post ASC LIMIT 3",
+    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 ORDER BY updated ASC LIMIT 3",
                        True)
