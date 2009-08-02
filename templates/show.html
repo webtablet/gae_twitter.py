@@ -10,7 +10,8 @@ Your bots -
 {% for bot in bots %}
 <div {% if not bot.enable %} class="disabled" {% endif %} >
   <h2 >{{ bot.name }}</h2>
-  <p>Status : {{ bot.status }}. <a href="/edit/?key={{ bot.key }}">Edit this bot</a></p>
+  <p>Feed URL: {{ bot.feed }}</p>
+  <p>Status : {{ bot.status }}. <a target="_blank" href="/edit/?key={{ bot.key }}">Edit this bot</a></p>
   <ul>
     <li>enabled : {% if bot.enable %} True {% else %} False {% endif %}</p>
     <li>last_post : {{ bot.last_post }}</p>
