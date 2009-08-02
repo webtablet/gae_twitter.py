@@ -5,7 +5,6 @@
 
 import os
 import sys
-import time
 import logging
 import datetime
 
@@ -20,6 +19,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext import db
 from google.appengine.api import users
 from google.appengine.ext.webapp import template
+
 
 
 APP_DIRECTORY = dirname(__file__)
@@ -95,7 +95,7 @@ class BotCreateHandler(webapp.RequestHandler):
             try:
                 bot.put()
             except Exception, e:
-                error_status = error_status + 4
+                error_status |=  4
                 server_error = str(e)
         self.response.out.write(str(error_status) + server_error)
 
@@ -154,7 +154,7 @@ class BotCronHandler(webapp.RequestHandler):
         self.response.out.write(feeds + str(post_count))
 
 class HatenaTestHandler(webapp.RequestHandler):
-    """Test hatena antenna RSS reply time"""
+    """Test hatena antenna RSS response time"""
     def get(self):
         before = datetime.datetime.now()
         feedparser.parse('http://www.hatena.ne.jp/suztomo/antenna.rss')

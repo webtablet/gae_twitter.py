@@ -8,6 +8,21 @@ import logging
 
 from gae_twitter import GAETwitter
 
+import sgmllib
+
+class Stripper(sgmllib.SGMLParser):
+    def __init__(self):
+        sgmllib.SGMLParser.__init__(self)
+
+    def strip(self, some_html):
+        self.theString = ""
+        self.feed(some_html)
+        self.close()
+        return self.theString
+
+    def handle_data(self, data):
+        self.theString += data
+
 class Bot(db.Model):
     """A bot
     """
@@ -59,6 +74,13 @@ class Bot(db.Model):
         message = message.replace('{{url}}',
                                   entry.get('link', "No link").encode('utf-8'))
 
+        if message.find('{{content}}') >= 0:
+            stripper = Stripper()
+            stripped_content = stripper.strip(entry['content'][0]['value'].
+                                              encode('utf-8'))
+            message = message.replace('{{content}}',
+                                      stripped_content)
+
         # Do not post if the message has exclusive keywords
         for exkeyword in self.exkeywords.split(' '):
             if len(exkeyword) < 1:
@@ -78,49 +100,64 @@ class Bot(db.Model):
         logging.debug(message)
         return message
 
+    def changestatus(self, newstat):
+        self.status = newstat
+        logging.debug("%s(%s) has changed status : %s" % (self.name,
+                                                          self.feed,
+                                                          self.status))
+        self.put()
+
     def postfeedentry(self):
         """Posts a tweet"""
         gae_twitter = GAETwitter(username=self.name, password=self.password)
         feed_result = feedparser.parse(self.feed)
         if 'bozo_exception' in feed_result:
-            self.status = str(feed_result.bozo_exception)
-            logging.debug("bozo_exception")
-            self.put()
+            self.changestatus(str(feed_result.bozo_exception))
+            logging.debug("bozo_exception : %s" % self.status)
             return 0
+        # Record current time
         self.put()
 
         if not ("entries" in feed_result):
-            logging.debug("no entries? %s" % self.feed)
-            self.status = "%s has no entries" % self.feed
+            self.changestatus("%s has no entries" % self.feed)
             return 0
         post_count = 0
         last_post = self.last_post
+        newest_entry_datetime = last_post
         if not last_post:
             return 0
         for entry in feed_result.entries:
-            entry_time = self.last_post
-            if not entry_time:
-                continue
+            # Check the entry's time
+            if not 'updated_parsed' in entry:
+                self.changestatus("No attribute 'updated_parsed' in %s"
+                                  % (str(entry)))
+                return 0
             entry_datetime = datetime(*(entry.updated_parsed[:6]))
-            if entry_datetime < last_post:
-                logging.debug("passed %s" % str(entry_datetime))
+            if entry_datetime <= last_post:
+#                logging.debug("passed %s" % str(entry_datetime))
                 continue
+            if entry_datetime > newest_entry_datetime:
+                newest_entry_datetime = entry_datetime
             message = self.create_post_message(entry)
             if not message:
                 continue
+
+            # post to twitter
             logging.debug(message)
             status = gae_twitter.post(message)
-            self.last_post = entry_datetime
             self.status = status
             if post_count == 0:
                 self.put()
             post_count = post_count + 1
             if post_count > 2:
                 break
+        self.last_post = newest_entry_datetime
         if post_count == 0:
-            self.status = "No new entries"
-        self.last_post = datetime.now()
-        self.put()
+            newstatus = "No new entries at %s" % str(datetime.now())
+        else:
+            newstatus = "Posted %d entries at %s" % (post_count,
+                                                       str(datetime.now()))
+        self.changestatus(newstatus)
         return post_count
 
 
@@ -130,7 +167,8 @@ def bots_by_user(user):
                        user)
 
 
+
 def bots_to_update():
     """Returns several bots whose last_post are oldest ones"""
-    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 ORDER BY last_post ASC LIMIT 3",
+    return db.GqlQuery("SELECT * FROM Bot WHERE enable = :1 ORDER BY updated ASC LIMIT 3",
                        True)
