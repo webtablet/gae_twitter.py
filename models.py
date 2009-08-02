@@ -134,7 +134,7 @@ class Bot(db.Model):
                 return 0
             entry_datetime = datetime(*(entry.updated_parsed[:6]))
             if entry_datetime <= last_post:
-#                logging.debug("passed %s" % str(entry_datetime))
+                logging.debug("passed %s" % str(entry_datetime))
                 continue
             if entry_datetime > newest_entry_datetime:
                 newest_entry_datetime = entry_datetime
